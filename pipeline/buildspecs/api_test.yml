@@ -1,0 +1,14 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - pip install pytest requests
+  build:
+    commands:
+      - pytest test_app.py
+  post_build:
+    commands:
+      - echo Build completed on `date`
+artifacts:
+  enable-symlinks: yes

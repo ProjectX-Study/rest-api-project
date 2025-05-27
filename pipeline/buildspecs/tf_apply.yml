@@ -1,0 +1,12 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - cd terraform
+      - terraform apply -auto-approve tfplan
+  post_build:
+    commands:
+      - echo Build completed on `date`
+artifacts:
+  enable-symlinks: yes

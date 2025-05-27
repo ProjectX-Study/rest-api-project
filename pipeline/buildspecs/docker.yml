@@ -1,0 +1,19 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+  build:
+    commands:
+      - echo Building Docker image...
+      - docker build -t api-rest ./api
+      - docker tag api-rest:latest $ECR_REPO_URL:latest
+  post_build:
+    commands:
+      - echo Pushing Docker image to ECR...
+      - docker push $ECR_REPO_URL:latest
+      - echo Build completed on `date`
+artifacts:
+  enable-symlinks: yes
