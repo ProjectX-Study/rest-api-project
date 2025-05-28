@@ -1,9 +1,9 @@
 module "pipeline" {
-  source = "./pipeline"
-  project_name = "rest-api"
-  stage = "qa"
+  source                  = "./pipeline"
+  project_name            = "rest-api"
+  stage                   = "qa"
   codestar_connection_arn = "arn:aws:codestar-connections:eu-west-1:111111111111:connection/aaaaa-bbbbbbbb-cccccccc-dddddddd"
-  region = "eu-west-1"
+  region                  = "eu-west-1"
 }
 
 terraform {

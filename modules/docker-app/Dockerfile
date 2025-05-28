@@ -1,18 +1,22 @@
-# Use a minimal base image with Python
-FROM python:3.11-slim
+# Use lightweight Python base image
+FROM python:3.10-slim
 
 # Set working directory
 WORKDIR /app
 
-# Install dependencies
+# Copy requirements and install
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the app
+# Copy app code
 COPY app.py .
 
-# Expose the API port
+# Set environment variable for Flask
+ENV FLASK_APP=app.py
+ENV FLASK_RUN_PORT=8080
+
+# Expose port
 EXPOSE 8080
 
-# Run the application
+# Command to run app
 CMD ["python", "app.py"]

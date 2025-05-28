@@ -18,11 +18,6 @@ variable "image_url" {
   description = "Full Docker image URL to run"
 }
 
-variable "rds_db_endpoint" {
-  type        = string
-  description = "RDS database endpoint for ECS container"
-}
-
 variable "project_name" {
   type        = string
   description = "Name of the project, platform or company"
@@ -31,6 +26,11 @@ variable "project_name" {
 variable "stage" {
   type        = string
   description = "Environment"
+}
+
+variable "rds_parameters" {
+  type        = number
+  description = "The port rest-api is listening on"
 }
 
 variable "rest_api_port" {

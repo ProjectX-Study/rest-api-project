@@ -15,7 +15,7 @@ resource "aws_subnet" "rest_api_public_subnet" {
   count                   = var.az_count
   vpc_id                  = aws_vpc.rest_api_vpc.id
   cidr_block              = cidrsubnet(var.vpc_cidr, 3, count.index)
-  availability_zone = data.aws_availability_zones.available.names[count.index]
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
   map_public_ip_on_launch = true
 }
 

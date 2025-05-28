@@ -29,17 +29,17 @@ resource "aws_security_group" "rest_api_ecs_sg" {
   vpc_id      = var.vpc_id
 
   ingress {
-    description = "Allow MySQL access from app SG"
-    from_port   = var.rest_api_port
-    to_port     = var.rest_api_port
-    protocol    = "tcp"
-    security_groups = [aws_security_group.rest_api_alb_sg.id]  # reference to app SG
+    description     = "Allow MySQL access from app SG"
+    from_port       = var.rest_api_port
+    to_port         = var.rest_api_port
+    protocol        = "tcp"
+    security_groups = [aws_security_group.rest_api_alb_sg.id] # reference to app SG
   }
 
   egress {
-    from_port   = var.start_port_rds
-    to_port     = var.end_port_rds
-    protocol    = "tcp"
+    from_port       = var.start_port_rds
+    to_port         = var.end_port_rds
+    protocol        = "tcp"
     security_groups = [aws_security_group.rest_api_rds_db_sg.id]
   }
 
@@ -54,11 +54,11 @@ resource "aws_security_group" "rest_api_rds_db_sg" {
   vpc_id      = var.vpc_id
 
   ingress {
-    description = "Allow MySQL access from app SG"
-    from_port   = var.start_port_rds
-    to_port     = var.end_port_rds
-    protocol    = "tcp"
-    security_groups = [aws_security_group.rest_api_alb_sg.id]  # reference to app SG
+    description     = "Allow MySQL access from app SG"
+    from_port       = var.start_port_rds
+    to_port         = var.end_port_rds
+    protocol        = "tcp"
+    security_groups = [aws_security_group.rest_api_alb_sg.id] # reference to app SG
   }
 
   egress {

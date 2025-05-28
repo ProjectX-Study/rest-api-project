@@ -1,5 +1,5 @@
 resource "aws_iam_role" "pipeline_role" {
-  name = "${var.project_name}-${var.stage}-pipeline-role"
+  name               = "${var.project_name}-${var.stage}-pipeline-role"
   assume_role_policy = data.aws_iam_policy_document.codestar_policy.json
 }
 
@@ -25,10 +25,10 @@ resource "aws_codebuild_project" "docker" {
   }
 
   environment {
-    compute_type                = "BUILD_GENERAL1_SMALL"
-    image                       = "aws/codebuild/standard:6.0"
-    type                        = "LINUX_CONTAINER"
-    privileged_mode             = true
+    compute_type    = "BUILD_GENERAL1_SMALL"
+    image           = "aws/codebuild/standard:6.0"
+    type            = "LINUX_CONTAINER"
+    privileged_mode = true
   }
 
   source {
@@ -98,8 +98,8 @@ resource "aws_codebuild_project" "api_test" {
 }
 
 resource "aws_codepipeline" "rest-api-pipeline" {
-  name     = "${var.project_name}-deploy"
-  role_arn = var.codestar_connection_arn
+  name          = "${var.project_name}-deploy"
+  role_arn      = var.codestar_connection_arn
   pipeline_type = "V2"
 
   artifact_store {
@@ -118,9 +118,9 @@ resource "aws_codepipeline" "rest-api-pipeline" {
       output_artifacts = ["source_output"]
 
       configuration = {
-        ConnectionArn    = var.codestar_connection_arn
-        FullRepositoryId = "${var.project_name}"
-        BranchName       = "main"
+        ConnectionArn        = var.codestar_connection_arn
+        FullRepositoryId     = "${var.project_name}"
+        BranchName           = "main"
         OutputArtifactFormat = "CODEBUILD_CLONE_REF"
       }
     }
@@ -139,7 +139,7 @@ resource "aws_codepipeline" "rest-api-pipeline" {
 
       configuration = {
         ProjectName = var.project_name
-        Stage = var.stage
+        Stage       = var.stage
       }
     }
   }
@@ -157,7 +157,7 @@ resource "aws_codepipeline" "rest-api-pipeline" {
 
       configuration = {
         ProjectName = var.project_name
-        Stage = var.stage
+        Stage       = var.stage
       }
     }
   }
@@ -165,27 +165,27 @@ resource "aws_codepipeline" "rest-api-pipeline" {
   stage {
     name = "Approve"
     action {
-      name             = "ManualApproval"
-      category         = "Approval"
-      owner            = "AWS"
-      version          = "2"
-      provider         = "Manual"
+      name     = "ManualApproval"
+      category = "Approval"
+      owner    = "AWS"
+      version  = "2"
+      provider = "Manual"
     }
   }
 
   stage {
     name = "Terraform_Apply"
     action {
-      name             = "TerraformApply"
-      category         = "Build"
-      owner            = "AWS"
-      version          = "2"
-      provider         = "CodeBuild"
-      input_artifacts  = ["plan_output"]
+      name            = "TerraformApply"
+      category        = "Build"
+      owner           = "AWS"
+      version         = "2"
+      provider        = "CodeBuild"
+      input_artifacts = ["plan_output"]
 
       configuration = {
         ProjectName = var.project_name
-        Stage = var.stage
+        Stage       = var.stage
       }
     }
   }
@@ -193,16 +193,16 @@ resource "aws_codepipeline" "rest-api-pipeline" {
   stage {
     name = "Test"
     action {
-      name             = "ConnectivityTest"
-      category         = "Build"
-      owner            = "AWS"
-      version          = "2"
-      provider         = "CodeBuild"
-      input_artifacts  = ["source_output"]
+      name            = "ConnectivityTest"
+      category        = "Build"
+      owner           = "AWS"
+      version         = "2"
+      provider        = "CodeBuild"
+      input_artifacts = ["source_output"]
 
       configuration = {
         ProjectName = var.project_name
-        Stage = var.stage
+        Stage       = var.stage
       }
     }
   }

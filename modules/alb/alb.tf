@@ -7,10 +7,10 @@ resource "aws_lb" "rest_api_alb" {
 }
 
 resource "aws_lb_target_group" "rest_api_tg" {
-  name     = "${var.project_name}-${var.stage}-target-group"
-  port     = var.rest_api_port
-  protocol = "HTTP"
-  vpc_id   = var.vpc_id
+  name        = "${var.project_name}-${var.stage}-target-group"
+  port        = var.rest_api_port
+  protocol    = "HTTP"
+  vpc_id      = var.vpc_id
   target_type = "ip"
 }
 

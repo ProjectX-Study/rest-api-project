@@ -8,7 +8,7 @@ variable "hosted_zone_id" {
   description = "The Route53 hosted zone ID"
 }
  */
- variable "project_name" {
+variable "project_name" {
   type        = string
   description = "Name of the project, platform or company"
 }

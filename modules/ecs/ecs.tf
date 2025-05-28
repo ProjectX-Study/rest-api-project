@@ -1,3 +1,28 @@
+data "aws_iam_policy_document" "rest_api_ecs_task_assume_role" {
+  statement {
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+resource "aws_iam_role" "rest_api_ecs_task_execution" {
+  name               = "${var.project_name}-${var.stage}-ecs-task-execution"
+  assume_role_policy = data.aws_iam_policy_document.rest_api_ecs_task_assume_role.json
+}
+
+resource "aws_iam_policy_attachment" "secrets_access" {
+  name       = "${var.project_name}-${var.stage}-ecs-secrets-access"
+  roles      = [aws_iam_role.rest_api_ecs_task_execution.name]
+  policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
+}
+
+
 resource "aws_ecs_cluster" "rest_api_ecs" {
   name = "${var.project_name}-${var.stage}-ecs-cluster"
 }
@@ -17,7 +42,7 @@ resource "aws_ecs_task_definition" "rest_api_task" {
       protocol      = "tcp"
     }]
     environment = [
-      { name = "DB_HOST", value = var.rds_db_endpoint }
+      { name = "SECRET_NAME", value = var.rds_parameters }
     ]
   }])
 }

@@ -14,6 +14,6 @@ variable "stage" {
 }
 
 variable "codestar_connection_arn" {
-  type = string
+  type        = string
   description = "Codestar connection required for succesfull repository clone"
 }
