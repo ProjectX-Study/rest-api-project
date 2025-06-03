@@ -28,7 +28,7 @@ variable "stage" {
   description = "Environment"
 }
 
-variable "rds_parameters" {
+variable "rds_credentials" {
   type        = number
   description = "The port rest-api is listening on"
 }
@@ -51,4 +51,14 @@ variable "ecs_security_group" {
 variable "region" {
   type        = string
   description = "Region of deployment"
+}
+
+variable "rds_db_endpoint" {
+  type        = string
+  description = "RDS endpoint name"
+}
+
+variable "db_name" {
+  type        = string
+  description = "RDS database name"
 }

@@ -8,7 +8,7 @@ module "network" {
   stage        = var.stage
 }
 
-module "rds_secret" {
+module "rds-secret" {
   source       = "./rds-secret"
   project_name = var.project_name
   stage        = var.stage
@@ -37,8 +37,8 @@ module "rds-db" {
   vpc_id             = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
   rds_security_group = module.sg.rds_security_group
-  rds_db_password = module.rds_secret.rds_db_password
-  rds_db_username = module.rds_secret.rds_db_username
+  rds_db_password    = module.rds-secret.rds_db_password
+  rds_db_username    = module.rds-secret.rds_db_username
   project_name       = var.project_name
   stage              = var.stage
 }
@@ -52,10 +52,12 @@ module "ecs" {
   alb_target_group    = module.alb.alb_target_group
   ecs_security_group  = module.sg.ecs_security_group
   rest_api_port       = var.rest_api_port
-  rds_parameters          = module.rds_secret.rds_parameters
+  rds_credentials     = module.rds-secret.rds_credentials
   project_name        = var.project_name
   stage               = var.stage
-  region = var.region
+  rds_db_endpoint     = module.rds-db.rds_db_endpoint
+  db_name             = module.rds-db.rds_db_name
+  region              = var.region
 }
 
 module "alb" {

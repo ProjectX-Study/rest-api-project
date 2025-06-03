@@ -27,15 +27,15 @@ resource "aws_db_instance" "rest_api_rds_db" {
 }
 
 resource "aws_db_instance" "rest_api_rds_read_replica" {
-  identifier              = "${var.project_name}-${var.stage}-rds-replica"
+  identifier             = "${var.project_name}-${var.stage}-rds-replica"
   engine                 = "mysql"
-  instance_class          = "db.t3.micro"
-  db_subnet_group_name    = aws_db_subnet_group.rest_api_rds_db_subnets.name
-  vpc_security_group_ids  = [var.rds_security_group]
-  replicate_source_db     = aws_db_instance.rest_api_rds_db.id
-  skip_final_snapshot     = true #! change to false in prod
+  instance_class         = "db.t3.micro"
+  db_subnet_group_name   = aws_db_subnet_group.rest_api_rds_db_subnets.name
+  vpc_security_group_ids = [var.rds_security_group]
+  replicate_source_db    = aws_db_instance.rest_api_rds_db.id
+  skip_final_snapshot    = true #! change to false in prod
 
   tags = {
-    Name        = "${var.project_name}-${var.stage}-rds-replica"
+    Name = "${var.project_name}-${var.stage}-rds-replica"
   }
 }

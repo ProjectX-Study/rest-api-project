@@ -42,24 +42,32 @@ resource "aws_ecs_task_definition" "rest_api_task" {
       protocol      = "tcp"
     }]
     environment = [
-      { 
-        name = "SECRET_NAME", 
-        value = var.rds_parameters 
+      {
+        name  = "SECRET_NAME",
+        value = var.rds_credentials
       },
-      { 
-        name = "AWS_REGION", 
+      {
+        name  = "AWS_REGION",
         value = var.region
+      },
+      {
+        name  = "db_name",
+        value = var.db_name
+      },
+      {
+        name  = "db_endpoint",
+        value = var.rds_db_endpoint
       }
     ]
   }])
 }
 
 resource "aws_ecs_service" "rest_api_service" {
-  name            = "${var.project_name}-${var.stage}-service"
-  cluster         = aws_ecs_cluster.rest_api_ecs.id
-  launch_type     = "FARGATE"
-  desired_count   = 2
-  task_definition = aws_ecs_task_definition.rest_api_task.arn
+  name             = "${var.project_name}-${var.stage}-service"
+  cluster          = aws_ecs_cluster.rest_api_ecs.id
+  launch_type      = "FARGATE"
+  desired_count    = 2
+  task_definition  = aws_ecs_task_definition.rest_api_task.arn
   platform_version = "LATEST"
 
   network_configuration {
