@@ -1,5 +1,5 @@
 resource "aws_acm_certificate" "cert" {
-  domain_name       = "test-rest-api"
+  domain_name       = "test-rest-api.com"
   validation_method = "DNS"
 
   lifecycle {
@@ -7,7 +7,7 @@ resource "aws_acm_certificate" "cert" {
   }
 
   tags = {
-    Name = "API Certificate"
+    Name = "${var.project_name}-${var.stage}-ALB-certificate"
   }
 }
 
@@ -20,6 +20,7 @@ resource "aws_route53_record" "cert_validation" {
     }
   }
 
+  allow_overwrite = true
   zone_id = "test-rest-api-zone"
   name    = each.value.name
   type    = each.value.type

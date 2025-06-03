@@ -32,7 +32,3 @@ resource "aws_subnet" "rest_api_database_subnet" {
   cidr_block        = cidrsubnet(var.vpc_cidr, 3, count.index + 2)
   availability_zone = data.aws_availability_zones.available.names[count.index]
 }
-
-resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.rest_api_vpc.id
-}

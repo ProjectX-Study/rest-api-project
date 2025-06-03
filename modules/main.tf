@@ -55,6 +55,7 @@ module "ecs" {
   rds_parameters          = module.rds_secret.rds_parameters
   project_name        = var.project_name
   stage               = var.stage
+  region = var.region
 }
 
 module "alb" {

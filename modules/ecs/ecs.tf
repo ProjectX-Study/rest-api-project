@@ -42,7 +42,14 @@ resource "aws_ecs_task_definition" "rest_api_task" {
       protocol      = "tcp"
     }]
     environment = [
-      { name = "SECRET_NAME", value = var.rds_parameters }
+      { 
+        name = "SECRET_NAME", 
+        value = var.rds_parameters 
+      },
+      { 
+        name = "AWS_REGION", 
+        value = var.region
+      }
     ]
   }])
 }
@@ -51,8 +58,9 @@ resource "aws_ecs_service" "rest_api_service" {
   name            = "${var.project_name}-${var.stage}-service"
   cluster         = aws_ecs_cluster.rest_api_ecs.id
   launch_type     = "FARGATE"
-  desired_count   = 1
+  desired_count   = 2
   task_definition = aws_ecs_task_definition.rest_api_task.arn
+  platform_version = "LATEST"
 
   network_configuration {
     subnets          = var.private_subnet_ids
@@ -65,4 +73,14 @@ resource "aws_ecs_service" "rest_api_service" {
     container_name   = "${var.project_name}-${var.stage}-container"
     container_port   = var.rest_api_port
   }
+
+  deployment_minimum_healthy_percent = 50
+  deployment_maximum_percent         = 200
+
+  # Force a new deployment if the task_definition changes
+  force_new_deployment = true
+
+  depends_on = [
+    aws_ecs_task_definition.rest_api_task
+  ]
 }

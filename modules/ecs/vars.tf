@@ -47,3 +47,8 @@ variable "ecs_security_group" {
   type        = string
   description = "ECS's security group"
 }
+
+variable "region" {
+  type        = string
+  description = "Region of deployment"
+}
