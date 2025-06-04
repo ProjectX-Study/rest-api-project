@@ -20,5 +20,10 @@ variable "stage" {
 
 variable "vpc_security_group" {
   type        = string
-  description = "Environment"
+  description = "Security group for VPC Endpoints"
+}
+
+variable "region" {
+  type        = string
+  description = "Reegion of deployment"
 }

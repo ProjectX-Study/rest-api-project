@@ -4,6 +4,9 @@ resource "aws_lb" "rest_api_alb" {
   load_balancer_type = "application"
   subnets            = var.public_subnet_ids
   security_groups    = [var.alb_security_group]
+  tags = {
+    Name = "${var.project_name}-${var.stage}-public-alb"
+  }
 }
 
 resource "aws_lb_target_group" "rest_api_tg" {
@@ -12,6 +15,9 @@ resource "aws_lb_target_group" "rest_api_tg" {
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
   target_type = "ip"
+  tags = {
+    Name = "${var.project_name}-${var.stage}-alb-tg"
+  }
 }
 
 resource "aws_lb_listener" "https" {
@@ -24,5 +30,8 @@ resource "aws_lb_listener" "https" {
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.rest_api_tg.arn
+  }
+  tags = {
+    Name = "${var.project_name}-${var.stage}-alb-listener"
   }
 }

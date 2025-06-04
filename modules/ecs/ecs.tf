@@ -14,6 +14,9 @@ data "aws_iam_policy_document" "rest_api_ecs_task_assume_role" {
 resource "aws_iam_role" "rest_api_ecs_task_execution" {
   name               = "${var.project_name}-${var.stage}-ecs-task-execution"
   assume_role_policy = data.aws_iam_policy_document.rest_api_ecs_task_assume_role.json
+  tags = {
+    Name = "${var.project_name}-${var.stage}-iam-ecs-execution"
+  }
 }
 
 resource "aws_iam_policy_attachment" "ecs_task_execution_policy" {
@@ -30,6 +33,9 @@ resource "aws_iam_policy_attachment" "secrets_access" {
 
 resource "aws_ecs_cluster" "rest_api_ecs" {
   name = "${var.project_name}-${var.stage}-ecs-cluster"
+  tags = {
+    Name = "${var.project_name}-${var.stage}-ecs-cluster"
+  }
 }
 
 resource "aws_ecs_task_definition" "rest_api_task" {
@@ -67,6 +73,9 @@ resource "aws_ecs_task_definition" "rest_api_task" {
       }
     ]
   }])
+  tags = {
+    Name = "${var.project_name}-${var.stage}-ecs-task-definiton"
+  }
 }
 
 resource "aws_ecs_service" "rest_api_service" {
@@ -94,6 +103,10 @@ resource "aws_ecs_service" "rest_api_service" {
 
   # Force a new deployment if the task_definition changes
   force_new_deployment = true
+
+  tags = {
+    Name = "${var.project_name}-${var.stage}-ecs-service"
+  }
 
   depends_on = [
     aws_ecs_task_definition.rest_api_task

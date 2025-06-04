@@ -7,12 +7,15 @@ resource "aws_acm_certificate" "cert" {
   }
 
   tags = {
-    Name = "${var.project_name}-${var.stage}-ALB-certificate"
+    Name = "${var.project_name}-${var.stage}-alb-certificate"
   }
 }
 
 resource "aws_route53_zone" "rest_api_zone" {
   name = "project-x-study-lab.xyz"
+  tags = {
+    Name = "${var.project_name}-${var.stage}-route53-zone"
+  }
 }
 
 resource "aws_route53_record" "cert_validation" {

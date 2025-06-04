@@ -2,6 +2,9 @@ data "aws_caller_identity" "current" {}
 
 resource "aws_ecr_repository" "rest_api_ecr_repository" {
   name = "${var.project_name}-${var.stage}-ecr-repository"
+  tags = {
+    Name = "${var.project_name}-${var.stage}-rest-api-repository"
+  }
 }
 
 resource "null_resource" "docker_build_push" {

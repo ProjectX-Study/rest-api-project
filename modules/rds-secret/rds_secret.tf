@@ -7,6 +7,9 @@ resource "random_password" "rest_api_rds_db_password" {
 resource "aws_secretsmanager_secret" "rest_api_rds_db_credentials" {
   name        = "${var.project_name}-${var.stage}-db-mysql-secret"
   description = "Credentials for RDS MySQL"
+  tags = {
+    Name = "${var.project_name}-${var.stage}-rds-secret"
+  }
 }
 
 resource "aws_secretsmanager_secret_version" "rds_credentials" {
@@ -15,4 +18,5 @@ resource "aws_secretsmanager_secret_version" "rds_credentials" {
     username = "rds_admin"
     password = random_password.rest_api_rds_db_password.result
   })
+  
 }

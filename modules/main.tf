@@ -17,6 +17,7 @@ module "endpoints" {
   vpc_id = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
   vpc_security_group = module.sg.vpc_security_group
+  region = var.region
 }
 
 module "rds-secret" {
