@@ -72,3 +72,23 @@ resource "aws_security_group" "rest_api_rds_db_sg" {
     Name = "${var.project_name}-${var.stage}-rds-db-sg"
   }
 }
+
+resource "aws_security_group" "rest_api_vpc_endpoint_sg" {
+  name        = "${var.project_name}-${var.stage}vpc-endpoint-sg"
+  description =  "Allows ECS tasks to talk to AWS APIs via interface endpoints"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    security_groups = [aws_security_group.rest_api_ecs_sg.id] # allow ECS tasks to connect
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}

@@ -1,5 +1,5 @@
 resource "aws_acm_certificate" "cert" {
-  domain_name       = "test-rest-api.com"
+  domain_name       = "project-x-study-lab.xyz"
   validation_method = "DNS"
 
   lifecycle {
@@ -12,7 +12,7 @@ resource "aws_acm_certificate" "cert" {
 }
 
 resource "aws_route53_zone" "rest_api_zone" {
-  name = "test-rest-api.com"
+  name = "project-x-study-lab.xyz"
 }
 
 resource "aws_route53_record" "cert_validation" {

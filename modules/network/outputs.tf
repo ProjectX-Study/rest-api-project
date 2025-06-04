@@ -14,7 +14,6 @@ output "database_subnet_ids" {
   value = aws_subnet.rest_api_database_subnet[*].id
 }
 
-
 output "internet_gateway_id" {
   value = aws_internet_gateway.igw.id
 }

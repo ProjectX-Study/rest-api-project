@@ -6,6 +6,17 @@ module "network" {
   source       = "./network"
   project_name = var.project_name
   stage        = var.stage
+  vpc_cidr = var.vpc_cidr
+  az_count = var.az_count
+}
+
+module "endpoints" {
+  source       = "./endpoints"
+  project_name = var.project_name
+  stage        = var.stage
+  vpc_id = module.network.vpc_id
+  private_subnet_ids = module.network.private_subnet_ids
+  vpc_security_group = module.sg.vpc_security_group
 }
 
 module "rds-secret" {
@@ -76,5 +87,4 @@ module "certificate" {
   project_name = var.project_name
   stage        = var.stage
 }
-
 

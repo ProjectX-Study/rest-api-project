@@ -16,12 +16,17 @@ resource "aws_iam_role" "rest_api_ecs_task_execution" {
   assume_role_policy = data.aws_iam_policy_document.rest_api_ecs_task_assume_role.json
 }
 
+resource "aws_iam_policy_attachment" "ecs_task_execution_policy" {
+  name       = "${var.project_name}-${var.stage}-ecs-task-execution-policy"
+  roles      = [aws_iam_role.rest_api_ecs_task_execution.name]
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
 resource "aws_iam_policy_attachment" "secrets_access" {
   name       = "${var.project_name}-${var.stage}-ecs-secrets-access"
   roles      = [aws_iam_role.rest_api_ecs_task_execution.name]
   policy_arn = "arn:aws:iam::aws:policy/SecretsManagerReadWrite"
 }
-
 
 resource "aws_ecs_cluster" "rest_api_ecs" {
   name = "${var.project_name}-${var.stage}-ecs-cluster"
@@ -33,6 +38,8 @@ resource "aws_ecs_task_definition" "rest_api_task" {
   requires_compatibilities = ["FARGATE"]
   cpu                      = "256"
   memory                   = "512"
+
+  execution_role_arn = aws_iam_role.rest_api_ecs_task_execution.arn
 
   container_definitions = jsonencode([{
     name  = "${var.project_name}-${var.stage}-container"
