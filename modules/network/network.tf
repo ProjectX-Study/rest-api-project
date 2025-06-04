@@ -22,13 +22,17 @@ resource "aws_subnet" "rest_api_public_subnet" {
 resource "aws_subnet" "rest_api_private_subnet" {
   count             = var.az_count
   vpc_id            = aws_vpc.rest_api_vpc.id
-  cidr_block        = cidrsubnet(var.vpc_cidr, 3, count.index + 2)
+  cidr_block        = cidrsubnet(var.vpc_cidr, 3, count.index + var.az_count)
   availability_zone = data.aws_availability_zones.available.names[count.index]
 }
 
 resource "aws_subnet" "rest_api_database_subnet" {
   count             = var.az_count
   vpc_id            = aws_vpc.rest_api_vpc.id
-  cidr_block        = cidrsubnet(var.vpc_cidr, 3, count.index + 2)
+  cidr_block        = cidrsubnet(var.vpc_cidr, 3, count.index + (var.az_count * 2))
   availability_zone = data.aws_availability_zones.available.names[count.index]
+}
+
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.rest_api_vpc.id
 }

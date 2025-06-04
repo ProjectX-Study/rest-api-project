@@ -15,20 +15,25 @@ from marshmallow import Schema, fields, ValidationError
 
 def fetch_aws_secret(secret_name: str, region_name: str = None, cache_ttl: int = 300):
     """
-    Retrieve (and cache) a JSON‐formatted secret from AWS Secrets Manager.
+    Retrieve (and cache) a JSON‐formatted secret from AWS Secrets Manager,
+    expected to contain at least "username" and "password".
     Caches in memory for `cache_ttl` seconds to avoid frequent calls.
     """
     global _cached_secret, _secret_recv_time
-    try:
-        now = datetime.now()
-        if (
-            "_cached_secret" in globals()
-            and "_secret_recv_time" in globals()
-            and (now - _secret_recv_time) < timedelta(seconds=cache_ttl)
-        ):
-            return _cached_secret
 
-        client = boto3.client("secretsmanager", region_name=region_name or os.getenv("AWS_REGION"))
+    now = datetime.now()
+    if (
+        "_cached_secret" in globals()
+        and "_secret_recv_time" in globals()
+        and (now - _secret_recv_time) < timedelta(seconds=cache_ttl)
+    ):
+        return _cached_secret
+
+    try:
+        client = boto3.client(
+            "secretsmanager",
+            region_name=region_name or os.getenv("AWS_REGION")
+        )
         resp = client.get_secret_value(SecretId=secret_name)
         secret_dict = json.loads(resp["SecretString"])
         _cached_secret = secret_dict
@@ -41,42 +46,65 @@ def fetch_aws_secret(secret_name: str, region_name: str = None, cache_ttl: int =
 
 
 class Config:
-    # Use environment‐variable “SECRET_NAME” to look up RDS credentials in Secrets Manager.
+    # Environment variables (must be set):
+    #   SECRET_NAME   → the Secrets Manager secret that holds {"username","password"}
+    #   AWS_REGION    → AWS region for Secrets Manager (e.g. “us-east-1”)
+    #   DB_ENDPOINT   → RDS endpoint, e.g. "mydb.xxxx.us-east-1.rds.amazonaws.com:3306"
+    #   DB_NAME       → database name, e.g. "mydatabase"
+    #
     SECRET_NAME = os.getenv("SECRET_NAME", "").strip()
     AWS_REGION = os.getenv("AWS_REGION", "").strip()
+    DB_ENDPOINT = os.getenv("DB_ENDPOINT", "").strip()
+    DB_NAME = os.getenv("DB_NAME", "").strip()
 
-    # SQLALCHEMY_DATABASE_URI will be constructed at runtime from the secret.
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JSON_SORT_KEYS = False  # keep JSON keys in defined order
     PROPAGATE_EXCEPTIONS = True  # so Flask errorhandlers run
 
     @classmethod
     def init_app(cls, app: Flask):
+        # 1️⃣ Required checks:
         if not cls.SECRET_NAME:
             raise RuntimeError("SECRET_NAME environment variable is required.")
+        if not cls.DB_ENDPOINT:
+            raise RuntimeError("DB_ENDPOINT environment variable is required.")
+        if not cls.DB_NAME:
+            raise RuntimeError("DB_NAME environment variable is required.")
 
-        # Fetch the secret (a JSON string) from AWS Secrets Manager
-        secret = fetch_aws_secret(cls.SECRET_NAME, region_name=cls.AWS_REGION)
-        # Expecting secret JSON like:
+        # 2️⃣ Fetch username/password from Secrets Manager:
+        secret = fetch_aws_secret(
+            cls.SECRET_NAME,
+            region_name=cls.AWS_REGION
+        )
+        #
+        # Expecting the secret JSON to look like:
         # {
-        #   "username": "...",
-        #   "password": "...",
-        #   "host": "mydb.xxxxxx.us-east-1.rds.amazonaws.com:3306",
-        #   "db_name": "mydatabase"
+        #   "username": "dbuser",
+        #   "password": "dbpass"
         # }
-        host_addr = secret["host"].split(":")
-        db_host = host_addr[0]
-        db_port = int(host_addr[1]) if len(host_addr) > 1 else 3306
-        user = secret["username"]
-        pwd = secret["password"]
-        name = secret["db_name"]
+        user = secret.get("username")
+        pwd = secret.get("password")
+        if not user or not pwd:
+            raise RuntimeError(
+                f"Secret '{cls.SECRET_NAME}' must contain 'username' and 'password'."
+            )
 
-        # Build the SQLAlchemy connection URI
+        # 3️⃣ Parse DB_ENDPOINT into host and port:
+        #    DB_ENDPOINT example: "mydb.xxxx.us-east-1.rds.amazonaws.com:3306"
+        host_addr = cls.DB_ENDPOINT.split(":")
+        db_host = host_addr[0]
+        try:
+            db_port = int(host_addr[1]) if len(host_addr) > 1 else 3306
+        except ValueError:
+            raise RuntimeError(f"Invalid DB_ENDPOINT port: {host_addr[1]}")
+
+        # 4️⃣ Build the SQLAlchemy connection URI:
+        #    mysql+pymysql://{user}:{pwd}@{db_host}:{db_port}/{DB_NAME}
         app.config["SQLALCHEMY_DATABASE_URI"] = (
-            f"mysql+pymysql://{user}:{pwd}@{db_host}:{db_port}/{name}"
+            f"mysql+pymysql://{user}:{pwd}@{db_host}:{db_port}/{cls.DB_NAME}"
         )
 
-        # Optional: adjust pool size/timeouts here if desired
+        # 5️⃣ (Optional) tuning for engine:
         app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
             "pool_size": 5,
             "max_overflow": 10,
@@ -92,8 +120,8 @@ class Config:
 app = Flask(__name__)
 app.config.from_object(Config)
 Config.init_app(app)
-
 db = SQLAlchemy(app)
+
 
 # ------------------------------------------------------------------------------
 # ── Database Model ─────────────────────────────────────────────────────────────
@@ -154,7 +182,10 @@ def index():
     """
     Basic health check or welcome endpoint.
     """
-    return jsonify({"message": "API is running", "timestamp": datetime.utcnow().isoformat() + "Z"}), 200
+    return jsonify({
+        "message": "API is running",
+        "timestamp": datetime.utcnow().isoformat() + "Z"
+    }), 200
 
 
 @app.route("/data", methods=["POST"])
@@ -163,10 +194,9 @@ def create_data():
     Create a new item. Expects JSON body: { "name": "<string>" }.
     """
     try:
-        # Validate incoming payload
         payload = item_schema.load(request.get_json(force=True))
     except ValidationError as ve:
-        raise
+        raise  # handled by @app.errorhandler(ValidationError)
 
     new_item = Item(name=payload["name"])
     try:
@@ -200,10 +230,12 @@ def delete_data(item_id):
     """
     Delete an item by ID.
     """
-    # Validate that item_id > 0
     if item_id <= 0:
         return make_response(
-            jsonify({"error": "Invalid item_id", "message": "item_id must be a positive integer."}), 
+            jsonify({
+                "error": "Invalid item_id",
+                "message": "item_id must be a positive integer."
+            }),
             400
         )
 

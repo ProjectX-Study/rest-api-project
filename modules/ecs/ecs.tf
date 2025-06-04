@@ -51,11 +51,11 @@ resource "aws_ecs_task_definition" "rest_api_task" {
         value = var.region
       },
       {
-        name  = "db_name",
+        name  = "DB_NAME",
         value = var.db_name
       },
       {
-        name  = "db_endpoint",
+        name  = "DB_ENDPOINT",
         value = var.rds_db_endpoint
       }
     ]

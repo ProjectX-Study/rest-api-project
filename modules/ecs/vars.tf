@@ -29,7 +29,7 @@ variable "stage" {
 }
 
 variable "rds_credentials" {
-  type        = number
+  type        = string
   description = "The port rest-api is listening on"
 }
 
